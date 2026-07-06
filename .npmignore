@@ -1,0 +1,19 @@
+# Development artifacts
+.env
+session/
+*.log
+
+# Player dev-only
+player/node_modules/
+player/src/
+
+# OS / IDE
+.DS_Store
+.claude/
+
+# Docs not needed in tarball (README is included via files list override if needed)
+IMPLEMENTATION_PLAN.md
+PUBLISH.md
+PLAYER_PLAN.md
+PLAN.md
+ARCHITECTURE.md

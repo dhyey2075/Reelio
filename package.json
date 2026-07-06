@@ -1,0 +1,68 @@
+{
+  "name": "reelio",
+  "version": "0.1.0",
+  "description": "Local Instagram Reels companion for Claude Code — plays reels while you code",
+  "main": "index.js",
+  "bin": {
+    "reelio": "./bin/reelio.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "hooks/",
+    "server/",
+    "store/",
+    "browser/",
+    "fetcher/",
+    "parser/",
+    "auth/",
+    "scripts/",
+    "player/dist/",
+    "player/electron/",
+    "player/package.json",
+    "index.js",
+    ".env.example",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js",
+    "reelio": "node bin/reelio.js",
+    "setup": "node bin/reelio.js setup",
+    "login": "node bin/reelio.js login",
+    "stop": "node bin/reelio.js stop",
+    "doctor": "node bin/reelio.js doctor",
+    "start": "node index.js",
+    "start:all": "node bin/reelio.js start",
+    "player": "cd player && npm run dev",
+    "hooks:install": "node bin/reelio.js hooks install",
+    "hooks:status": "node bin/reelio.js hooks status",
+    "hooks:uninstall": "node bin/reelio.js hooks uninstall",
+    "test:refresh": "curl -s -X POST 'http://localhost:3001/api/reels/refresh?fresh=true'",
+    "test:play": "curl -s -X POST http://localhost:3001/api/player/play",
+    "test:pause": "curl -s -X POST http://localhost:3001/api/player/pause -H 'Content-Type: application/json' -d '{\"reelId\":null,\"currentTime\":0,\"cursor\":null}'",
+    "test:cycle": "curl -s -X POST http://localhost:3001/api/player/play && sleep 5 && curl -s -X POST http://localhost:3001/api/player/pause -H 'Content-Type: application/json' -d '{\"reelId\":null,\"currentTime\":0}'",
+    "test:smoke": "bash scripts/smoke-test.sh"
+  },
+  "keywords": [
+    "instagram",
+    "reels",
+    "playwright",
+    "claude-code",
+    "claude",
+    "electron",
+    "developer-tools"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "playwright": "^1.50.1",
+    "ws": "^8.18.0"
+  }
+}
