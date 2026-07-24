@@ -7,6 +7,7 @@ const { runLogin } = require('../lib/login');
 const { startReelio } = require('../lib/start');
 const { stopReelio } = require('../lib/stop');
 const { runDoctor } = require('../lib/doctor');
+const { runScrape } = require('../lib/scrape');
 
 const command = process.argv[2];
 const subcommand = process.argv[3];
@@ -14,6 +15,31 @@ const extraArgs = process.argv.slice(4);
 
 function hasFlag(name) {
   return process.argv.includes(name);
+}
+
+function getFlagValue(name) {
+  const index = process.argv.indexOf(name);
+  if (index === -1 || index + 1 >= process.argv.length) {
+    return null;
+  }
+  return process.argv[index + 1];
+}
+
+function parseScrapeOptions() {
+  const countRaw = getFlagValue('--count');
+  const count = countRaw != null ? parseInt(countRaw, 10) : 50;
+
+  if (!Number.isFinite(count) || count < 1) {
+    console.error('Invalid --count. Use a positive integer.');
+    process.exit(1);
+  }
+
+  return {
+    count,
+    out: getFlagValue('--out'),
+    fresh: hasFlag('--fresh'),
+    headless: hasFlag('--headless') ? true : undefined,
+  };
 }
 
 function printHelp() {
@@ -25,12 +51,19 @@ Usage:
   reelio start [--foreground]  Start server + Electron player
   reelio stop                  Stop server and player
   reelio doctor                Check install health
+  reelio scrape [options]      Scrape explore Reels feed to JSON (CLI only)
   reelio hooks install         Install global Claude Code hooks
   reelio hooks uninstall       Remove Reelio hooks from global Claude settings
   reelio hooks status          Show whether global hooks are installed
 
 Global hooks let Reelio work in any directory where Claude Code is opened.
 Run \`reelio start\` before coding with Claude.
+
+Scrape options:
+  --count <n>    Target number of reels (default: 50)
+  --out <path>   Output file or directory (default: ./scrapes/reels-<timestamp>.json)
+  --fresh        Navigate to /reels/ before scrolling
+  --headless     Force headless browser (otherwise uses HEADLESS from ~/.reelio/.env)
 `);
 }
 
@@ -126,6 +159,11 @@ async function main() {
   if (command === 'doctor') {
     const code = await runDoctor();
     process.exit(code);
+  }
+
+  if (command === 'scrape') {
+    await runScrape(parseScrapeOptions());
+    return;
   }
 
   if (!command || command === 'help' || command === '--help' || command === '-h') {

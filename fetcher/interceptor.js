@@ -178,4 +178,5 @@ module.exports = {
   triggerRefresh,
   navigateToReelsFeed,
   loadMoreReels,
+  waitForIngest,
 };

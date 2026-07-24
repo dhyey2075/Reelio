@@ -20,11 +20,18 @@ async function launch() {
   const sessionDir = getSessionDir();
   const headless = isHeadless();
 
+  // Desktop fingerprint — Instagram serves a tablet app interstitial at
+  // ~1280x800 and other mid-size viewports, which hides the login form.
   context = await chromium.launchPersistentContext(sessionDir, {
     headless,
-    viewport: { width: 1280, height: 800 },
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 1,
+    isMobile: false,
+    hasTouch: false,
     userAgent:
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    locale: 'en-US',
+    timezoneId: 'America/New_York',
   });
 
   const pages = context.pages();

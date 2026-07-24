@@ -1,5 +1,6 @@
 node_modules/
 .env
 session/
+scrapes/
 
 docs

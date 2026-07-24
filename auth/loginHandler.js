@@ -126,6 +126,7 @@ async function isLoggedIn(page) {
     });
 
     await page.waitForTimeout(2000);
+    await dismissTabletAppInterstitial(page);
     return checkSessionOnPage(page);
   } catch {
     return false;
@@ -249,8 +250,42 @@ async function waitForPostLogin(page) {
   return checkSessionOnPage(page);
 }
 
+async function dismissTabletAppInterstitial(page) {
+  const tabletHeading = page.getByText('Get the full experience with the tablet app', {
+    exact: false,
+  });
+  const isTabletGate = await tabletHeading.isVisible({ timeout: 1500 }).catch(() => false);
+  if (!isTabletGate) {
+    return false;
+  }
+
+  console.log('Dismissing Instagram tablet app interstitial...');
+
+  const loginLink = page.getByRole('link', { name: /log in/i }).first();
+  if (await loginLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await loginLink.click();
+    await page.waitForTimeout(2000);
+    return true;
+  }
+
+  const loginOrSignup = page.getByText('Log in or Sign up', { exact: false }).first();
+  if (await loginOrSignup.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await loginOrSignup.click();
+    await page.waitForTimeout(2000);
+    return true;
+  }
+
+  await page.goto('https://www.instagram.com/accounts/login/', {
+    waitUntil: 'domcontentloaded',
+    timeout: 60000,
+  });
+  await page.waitForTimeout(2000);
+  return true;
+}
+
 async function dismissDialogs(page) {
   await handleOneTapPage(page);
+  await dismissTabletAppInterstitial(page);
 
   const dismissSelectors = [
     'button:has-text("Not Now")',
@@ -276,38 +311,59 @@ async function fillLoginForm(page, username, password) {
     'input[aria-label="Phone number, username, or email"]',
   ];
 
-  let usernameFilled = false;
+  let usernameInput = null;
   for (const selector of usernameSelectors) {
-    const input = page.locator(selector);
+    const input = page.locator(selector).first();
     if (await input.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await input.fill(username);
-      usernameFilled = true;
+      usernameInput = input;
       break;
     }
   }
 
-  if (!usernameFilled) {
+  if (!usernameInput) {
     throw new Error('Could not find Instagram username input');
   }
 
   const passwordInput = page
     .locator('input[name="password"], input[name="pass"], input[type="password"]')
     .first();
-  await passwordInput.fill(password);
 
-  const loginButton = page.getByRole('button', { name: 'Log in', exact: true });
-  if (await loginButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await loginButton.click();
+  if (!(await passwordInput.isVisible({ timeout: 3000 }).catch(() => false))) {
+    throw new Error('Could not find Instagram password input');
+  }
+
+  await usernameInput.click();
+  await usernameInput.fill('');
+  await usernameInput.type(username, { delay: 20 });
+
+  await passwordInput.click();
+  await passwordInput.fill('');
+  await passwordInput.type(password, { delay: 20 });
+  await page.waitForTimeout(500);
+
+  // Instagram's current login CTA is a nested div/span (role="none"), not a <button>.
+  const submitCandidates = [
+    page.locator('span').filter({ hasText: /^Log in$/i }).last(),
+    page.getByText('Log in', { exact: true }).last(),
+    page.locator('button[type="submit"]').first(),
+    page.getByRole('button', { name: /log\s*in/i }).first(),
+    page.locator('form button').filter({ hasText: /log\s*in/i }).first(),
+    page.locator('div[role="button"]').filter({ hasText: /log\s*in/i }).first(),
+    page.locator('input[type="submit"]').first(),
+  ];
+
+  for (const candidate of submitCandidates) {
+    const visible = await candidate.isVisible({ timeout: 1500 }).catch(() => false);
+    if (!visible) {
+      continue;
+    }
+
+    await candidate.click({ force: true });
     return;
   }
 
-  const submitInput = page.locator('input[type="submit"]').first();
-  if (await submitInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await submitInput.click();
-    return;
-  }
-
-  throw new Error('Could not find Instagram login submit button');
+  console.log('Login button not found by selector — submitting with Enter...');
+  await passwordInput.press('Enter');
 }
 
 async function performLogin(page) {

@@ -109,6 +109,11 @@ function size() {
   return reelOrder.length;
 }
 
+function getAll({ order = 'newest' } = {}) {
+  const orderKeys = buildOrder({ order, shuffle: false });
+  return orderKeys.map((key) => reelsById.get(key)).filter(Boolean);
+}
+
 function clear() {
   ingestGeneration += 1;
   reelsById.clear();
@@ -120,6 +125,7 @@ module.exports = {
   ingest,
   getReels,
   getReelsTail,
+  getAll,
   size,
   clear,
 };

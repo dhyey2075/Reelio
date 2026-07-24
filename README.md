@@ -41,6 +41,7 @@ Open Claude Code in **any project**, submit a prompt — reels play for the full
 | `reelio start [--foreground]` | Start server (:3001) + Electron player |
 | `reelio stop` | Stop server and player |
 | `reelio doctor` | Health checks |
+| `reelio scrape [--count <n>] [--out <path>] [--fresh] [--headless]` | Scrape explore Reels to JSON (no player) |
 | `reelio hooks install` | Install global Claude Code hooks |
 
 ## Configuration

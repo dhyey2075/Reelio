@@ -33,6 +33,7 @@
     "login": "node bin/reelio.js login",
     "stop": "node bin/reelio.js stop",
     "doctor": "node bin/reelio.js doctor",
+    "scrape": "node bin/reelio.js scrape",
     "start": "node index.js",
     "start:all": "node bin/reelio.js start",
     "player": "cd player && npm run dev",
